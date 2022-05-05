@@ -22,7 +22,7 @@ public class InviteCommand {
 	public static int list(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
 		ServerCommandSource source = context.getSource();
 
-		ArrayList<Invite> invites = Member.get(source.getPlayer().getUuid()).getFaction().getInvites();
+		ArrayList<Invite> invites = Position.get(source.getPlayer().getUuid()).getFaction().getInvites();
 		int count = invites.size();
 
 		new Message("You have ")
@@ -41,13 +41,14 @@ public class InviteCommand {
 		return 1;
 	}
 
+	// GameProfileArgumentType
 	public static int add(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
 		ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
 
 		ServerCommandSource source = context.getSource();
 		ServerPlayerEntity player = source.getPlayer();
 
-		Faction faction = Member.get(source.getPlayer().getUuid()).getFaction();
+		Faction faction = Position.get(source.getPlayer().getUuid()).getFaction();
 		Invite invite = Invite.get(target.getUuid(), faction.name);
 		if (invite != null) {
 			new Message(target.getName().getString() + " was already invited to your faction").format(Formatting.RED).send(player, false);
@@ -71,7 +72,7 @@ public class InviteCommand {
 		ServerCommandSource source = context.getSource();
 		ServerPlayerEntity player = source.getPlayer();
 
-		Faction faction = Member.get(player.getUuid()).getFaction();
+		Faction faction = Position.get(player.getUuid()).getFaction();
 		new Invite(target.getUuid(), faction.name).remove();
 
 		new Message(target.getName().getString() + " is no longer invited to your faction").send(player, false);

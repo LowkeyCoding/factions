@@ -3,46 +3,67 @@ package io.icker.factions.command;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import io.icker.factions.database.Member;
-import io.icker.factions.util.Message;
+import io.icker.factions.api.Player;
+import io.icker.factions.util.Command;
 import net.minecraft.command.argument.ColorArgumentType;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Formatting;
 
-public class ModifyCommand {
-    public static int description(CommandContext<ServerCommandSource> context) throws CommandSyntaxException{
+public class ModifyCommand implements Command {
+    public int description(CommandContext<ServerCommandSource> context, Player player, ServerPlayerEntity entity) {
         String description = StringArgumentType.getString(context, "description");
 
-		ServerCommandSource source = context.getSource();
-		ServerPlayerEntity player = source.getPlayer();
+        player.getFaction().setDescription(description);
 
-		Member.get(player.getUuid()).getFaction().setDescription(description);
-		new Message("Successfully updated faction description").send(player, false);
+		//new Message("Successfully updated faction description").send(entity, false);
 		return 1;
     }
 
-    public static int color(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    public int color(CommandContext<ServerCommandSource> context, Player player, ServerPlayerEntity entity) {
         Formatting color = ColorArgumentType.getColor(context, "color");
 
-		ServerCommandSource source = context.getSource();
-		ServerPlayerEntity player = source.getPlayer();
-
-		Member.get(player.getUuid()).getFaction().setColor(color);
-		new Message("Successfully updated faction color").send(player, false);
+		player.getFaction().setColor(color.getName());
+		//new Message("Successfully updated faction color").send(player, false);
 		return 1;
     }
 
-    public static int open(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    public int open(CommandContext<ServerCommandSource> context, Player player, ServerPlayerEntity entity) {
         boolean open = BoolArgumentType.getBool(context, "open");
 
-		ServerCommandSource source = context.getSource();
-		ServerPlayerEntity player = source.getPlayer();
-
-		Member.get(player.getUuid()).getFaction().setOpen(open);
-		new Message("Successfully updated faction to  " + (open ? "open" : "closed")).send(player, false);
+		player.getFaction().setOpen(open);
+		//new Message("Successfully updated faction to  " + (open ? "open" : "closed")).send(player, false);
 		return 1;
 	}
+
+    public LiteralCommandNode<ServerCommandSource> getNode() {
+		return CommandManager
+			.literal("modify")
+			.requires(Requires.isCommander())
+            .then(
+                CommandManager.literal("description")
+			    .then(
+                    CommandManager.argument("description", StringArgumentType.greedyString())
+                    .executes(Executes.execute(this::description))
+                )
+            )
+            .then(
+                CommandManager.literal("color")
+			    .then(
+                    CommandManager.argument("color", ColorArgumentType.color())
+                    .executes(Executes.execute(this::color))
+                )
+            )
+            .then(
+                CommandManager.literal("open")
+                .then(
+                    CommandManager.argument("open", BoolArgumentType.bool())
+                    .executes(Executes.execute(this::open))
+                )
+            )
+			.build();
+    }
 }

@@ -21,7 +21,7 @@ public class ClaimCommand {
 		ServerCommandSource source = context.getSource();
 		ServerPlayerEntity player = source.getPlayer();
 
-		ArrayList<Claim> claims = Member.get(player.getUuid()).getFaction().getClaims();
+		ArrayList<Claim> claims = Position.get(player.getUuid()).getFaction().getClaims();
 		int count = claims.size();
 
 		new Message("You have ")
@@ -48,7 +48,7 @@ public class ClaimCommand {
 		ChunkPos chunkPos = world.getChunk(player.getBlockPos()).getPos();
 		String dimension = world.getRegistryKey().getValue().toString();
 
-		Member member = Member.get(player.getUuid());
+		Position member = Position.get(player.getUuid());
 		Claim existingClaim = Claim.get(chunkPos.x, chunkPos.z, dimension);
 		
 		if (existingClaim == null) {
@@ -79,7 +79,7 @@ public class ClaimCommand {
 			return 0;
 		}
 
-		Faction faction = Member.get(player.getUuid()).getFaction();
+		Faction faction = Position.get(player.getUuid()).getFaction();
 		if (existingClaim.getFaction().name != faction.name) {
 			new Message("Cannot remove a claim owned by another faction").fail().send(player, false);
 			return 0;
@@ -94,7 +94,7 @@ public class ClaimCommand {
 		ServerCommandSource source = context.getSource();
 		ServerPlayerEntity player = source.getPlayer();
 
-		Faction faction = Member.get(player.getUuid()).getFaction();
+		Faction faction = Position.get(player.getUuid()).getFaction();
 
 		faction.removeAllClaims();
 		new Message("%s removed all claims", player.getName().asString()).send(faction);

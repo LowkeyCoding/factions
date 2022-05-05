@@ -24,8 +24,9 @@ public class Config {
     public static int TICKS_FOR_POWER_REWARD;
     public static int REQUIRED_BYPASS_LEVEL;
     public static HomeOptions HOME;
+    public static String DB_URL;
 
-    public static void init() {
+    public static void load() {
         JsonObject obj = Parser.load();
         
         Parser.asArray(obj, "zones").forEach(e -> {
@@ -33,15 +34,21 @@ public class Config {
             JsonObject zoneObj = e.getAsJsonObject();
             
             Type type = Parser.asEnum(zoneObj, "type", Type.class, Type.DEFAULT);
-            String message = Parser.asString(zoneObj, "message", "No fail message set");
+            String message = Parser.asString(zoneObj, "message", "<Error: Admin must set zone message>");
+            JsonObject dimensions = Parser.asObject(zoneObj, "dimensions");
 
             Zone zone = new Zone(type, message);
-            zone.x = Parser.asConstraint(zoneObj, "x");
-            zone.z = Parser.asConstraint(zoneObj, "z");
 
-            JsonObject dimensions = Parser.asObject(zoneObj, "dimensions");
-            zone.includedDimensions = Parser.asDimensionList(dimensions, "include");
-            zone.excludedDimensions = Parser.asDimensionList(dimensions, "exclude");
+            zone.setConstraints(
+                Parser.asConstraint(zoneObj, "x"),
+                Parser.asConstraint(zoneObj, "z")
+
+            );
+
+            zone.setDimensions(
+                Parser.asDimensionList(dimensions, "include"),
+                Parser.asDimensionList(dimensions, "exclude")
+            );
 
            ZONES.add(zone);
         });
@@ -56,6 +63,7 @@ public class Config {
         TICKS_FOR_POWER_REWARD = Parser.asInt(obj, "ticksForPowerReward", 1);
         REQUIRED_BYPASS_LEVEL = Parser.asInt(obj, "requiredBypassLevel", 2);
         HOME = Parser.asEnum(obj, "home", HomeOptions.class, HomeOptions.CLAIMS);
+        DB_URL = Parser.asString(obj, "databaseURL", "jdbc:h2:./factions/factions"); // TODO: document this
     }
 
     public static Zone getZone(String dimension, int x, int z) {

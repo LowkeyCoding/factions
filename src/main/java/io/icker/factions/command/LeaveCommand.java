@@ -1,27 +1,23 @@
 package io.icker.factions.command;
 
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import io.icker.factions.config.Config;
-import io.icker.factions.database.Faction;
-import io.icker.factions.database.Member;
-import io.icker.factions.event.FactionEvents;
-import io.icker.factions.util.Message;
-
-import com.mojang.brigadier.Command;
+import io.icker.factions.api.Faction;
+import io.icker.factions.api.Member;
+import io.icker.factions.api.Player;
+import io.icker.factions.util.Command;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-public class LeaveCommand implements Command<ServerCommandSource> {
-	@Override
-	public int run(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-		ServerCommandSource source = context.getSource();
-		ServerPlayerEntity player = source.getPlayer();
-		
-		Member member = Member.get(player.getUuid());
+public class LeaveCommand implements Command {
+	public int run(CommandContext<ServerCommandSource> context, Player player, ServerPlayerEntity entity) {		
+		Member member = Member.get(player.uuid);
 		Faction faction = member.getFaction();
         
+		// TODO: v1.4 REWRITE LOGIC
+		// ALL HERE
+
 		new Message(player.getName().asString() + " left").send(faction);
 		member.remove();
         context.getSource().getServer().getPlayerManager().sendCommandTree(player);
@@ -33,5 +29,10 @@ public class LeaveCommand implements Command<ServerCommandSource> {
 		}
 		
 		return 1;
+	}
+
+	public LiteralCommandNode<ServerCommandSource> getNode() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

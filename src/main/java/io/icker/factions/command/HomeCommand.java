@@ -25,7 +25,7 @@ public class HomeCommand {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        Faction faction = Member.get(player.getUuid()).getFaction();
+        Faction faction = Position.get(player.getUuid()).getFaction();
         Home home = faction.getHome();
 
         if (home == null) {
@@ -58,7 +58,7 @@ public class HomeCommand {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        Faction faction = Member.get(player.getUuid()).getFaction();
+        Faction faction = Position.get(player.getUuid()).getFaction();
 
         if (checkLimitToClaim(faction, player.getServerWorld(), player.getBlockPos())) {
             new Message("Cannot set home to an unclaimed chunk").fail().send(player, false);

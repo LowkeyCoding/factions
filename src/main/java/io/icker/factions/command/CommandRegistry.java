@@ -85,35 +85,6 @@ public class CommandRegistry {
 			)
 			.build();
 
-		LiteralCommandNode<ServerCommandSource> modify = CommandManager
-			.literal("modify")
-			.requires(CommandRegistry::isFactionMember)
-			.build();
-
-		LiteralCommandNode<ServerCommandSource> description = CommandManager
-			.literal("description")
-			.then(
-				CommandManager.argument("description", StringArgumentType.greedyString())
-				.executes(ModifyCommand::description)
-			)
-			.build();
-
-		LiteralCommandNode<ServerCommandSource> color = CommandManager
-			.literal("color")
-			.then(
-				CommandManager.argument("color", ColorArgumentType.color())
-				.executes(ModifyCommand::color)
-			)
-			.build();
-
-		LiteralCommandNode<ServerCommandSource> open = CommandManager
-			.literal("open")
-			.then(
-				CommandManager.argument("open", BoolArgumentType.bool())
-				.executes(ModifyCommand::open)
-			)
-			.build();
-
 		LiteralCommandNode<ServerCommandSource> invite = CommandManager
 			.literal("invite")
 			.requires(CommandRegistry::isFactionMember)
@@ -212,7 +183,7 @@ public class CommandRegistry {
 	public static boolean isFactionMember(ServerCommandSource source) {
 		try {
 			ServerPlayerEntity player = source.getPlayer();
-			return Member.get(player.getUuid()) != null;
+			return Position.get(player.getUuid()) != null;
 		} catch (CommandSyntaxException e) { return false; }
 	}
 

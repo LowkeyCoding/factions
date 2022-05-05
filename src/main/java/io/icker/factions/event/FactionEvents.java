@@ -8,7 +8,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 public class FactionEvents {
     public static void playerDeath(ServerPlayerEntity player) {
-        Member member = Member.get(player.getUuid());
+        Position member = Position.get(player.getUuid());
         if (member == null) return;
 
         Faction faction = member.getFaction();
@@ -18,7 +18,7 @@ public class FactionEvents {
     }
 
     public static void powerTick(ServerPlayerEntity player) {
-        Member member = Member.get(player.getUuid());
+        Position member = Position.get(player.getUuid());
         if (member == null) return;
 
         Faction faction = member.getFaction();

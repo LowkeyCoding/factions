@@ -49,8 +49,8 @@ public class PlayerInteractEvents {
     }
 
     public static boolean preventFriendlyFire(ServerPlayerEntity player, ServerPlayerEntity target) {
-        Member playerMember = Member.get(player.getUuid());
-        Member targetMember = Member.get(target.getUuid());
+        Position playerMember = Position.get(player.getUuid());
+        Position targetMember = Position.get(target.getUuid());
 
         if (playerMember == null || targetMember == null) return false;
         return playerMember.getFaction().name == targetMember.getFaction().name;
@@ -75,10 +75,15 @@ public class PlayerInteractEvents {
         String dimension = world.getRegistryKey().getValue().toString();
         ChunkPos actionPos = world.getChunk(pos).getPos();
 
+        // Test code (remove later)
+        //new Message(Config.getZone(dimension, actionPos.x, actionPos.z).getFailMessage())
+        //    .fail()
+        //    .send(player, false);
+
         Claim claim = Claim.get(actionPos.x, actionPos.z, dimension);
         if (claim == null) return true;
 
-        Member member = Member.get(player.getUuid());
+        Position member = Position.get(player.getUuid());
         Faction owner = claim.getFaction();
 
         boolean overclaimed = owner.getClaims().size() * Config.CLAIM_WEIGHT > owner.power;

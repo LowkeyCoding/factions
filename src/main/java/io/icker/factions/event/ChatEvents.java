@@ -13,7 +13,7 @@ import net.minecraft.util.Formatting;
 public class ChatEvents {
     public static void handleMessage(ServerPlayerEntity sender, String message) {
         UUID id = sender.getUuid();
-        Member member = Member.get(id);
+        Position member = Position.get(id);
 
         if (PlayerConfig.get(id).chat == ChatOption.GLOBAL) {
             if (member == null) {

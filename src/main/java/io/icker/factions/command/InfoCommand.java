@@ -24,7 +24,7 @@ public class InfoCommand  {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
         
-        Member member = Member.get(player.getUuid());
+        Position member = Position.get(player.getUuid());
         if (member == null) {
             new Message("Command can only be used whilst in a faction").fail().send(player, false);
             return 0;
@@ -49,7 +49,7 @@ public class InfoCommand  {
     }
 
     public static int info(ServerPlayerEntity player, Faction faction) {
-        ArrayList<Member> members = faction.getMembers();
+        ArrayList<Position> members = faction.getMembers();
 
         String memberText = members.size() + (Config.MAX_FACTION_SIZE != -1 ? "/" + Config.MAX_FACTION_SIZE : (" member" + (members.size() != 1 ? "s" : "")));
 
