@@ -29,8 +29,8 @@ public class WorldManager {
         String dimension = world.getRegistryKey().getValue().toString();
 
         ChunkPos chunkPos = world.getChunk(player.getBlockPos()).getPos();
-
-        Claim claim = Claim.get(chunkPos.x, chunkPos.z, dimension);
+        int YPos = (int)Math.floor((double)player.getBlockY()/16);
+        Claim claim = Claim.get(chunkPos.x, YPos, chunkPos.z, dimension);
         if (user.getAutoclaim() && claim == null) {
             Faction faction = user.getFaction();
             int requiredPower = (faction.getClaims().size() + 1) * FactionsMod.CONFIG.CLAIM_WEIGHT;
@@ -40,8 +40,8 @@ public class WorldManager {
                 new Message("Not enough faction power to claim chunk, autoclaim toggled off").fail().send(player, false);
                 user.toggleAutoclaim();
             } else {
-                faction.addClaim(chunkPos.x, chunkPos.z, dimension);
-                claim = Claim.get(chunkPos.x, chunkPos.z, dimension);
+                faction.addClaim(chunkPos.x, YPos, chunkPos.z, dimension);
+                claim = Claim.get(chunkPos.x, YPos, chunkPos.z, dimension);
                 new Message("Chunk (%d, %d) claimed by %s", chunkPos.x, chunkPos.z, player.getName().getString())
                     .send(faction);
             }

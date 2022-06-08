@@ -1,11 +1,13 @@
 package io.icker.factions.command;
 
 import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
+import com.sun.jna.IntegerType;
 import io.icker.factions.api.persistents.Faction;
 import io.icker.factions.api.persistents.User;
 import io.icker.factions.util.Command;
@@ -102,6 +104,22 @@ public class ModifyCommand implements Command {
         return 1;
     }
 
+    private int verticalRange(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        int lower_bound = IntegerArgumentType.getInteger(context, "lower bound");
+        int upper_bound = IntegerArgumentType.getInteger(context, "upper bound");
+        ServerCommandSource source = context.getSource();
+        ServerPlayerEntity player = source.getPlayer();
+
+        Faction faction = User.get(player.getUuid()).getFaction();
+
+        faction.setVerticalRange(lower_bound, upper_bound);
+        new Message("Successfully updated faction vertical claim area to (" + lower_bound + "," + upper_bound + ")" )
+                .prependFaction(faction)
+                .send(player, false);
+
+        return 1;
+    }
+
     public LiteralCommandNode<ServerCommandSource> getNode() {
         return CommandManager
             .literal("modify")
@@ -151,6 +169,17 @@ public class ModifyCommand implements Command {
                     CommandManager.argument("open", BoolArgumentType.bool())
                     .executes(this::open)
                 )
+            )
+            .then(
+                CommandManager
+                        .literal("VerticalClaimRange")
+                        .requires(Requires.hasPerms("factions.modify.open", 0))
+                        .then(
+                                CommandManager.argument("lower bound", IntegerArgumentType.integer(-4, 20)).then(
+                                        CommandManager.argument("upper bound", IntegerArgumentType.integer(-4, 20))
+                                        .executes(this::verticalRange)
+                                )
+                        )
             )
             .build();
     }

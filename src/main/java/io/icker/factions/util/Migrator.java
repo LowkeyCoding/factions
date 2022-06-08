@@ -38,7 +38,7 @@ public class Migrator {
 
                 Query claimQuery = new Query("SELECT * FROM Claim WHERE faction = ?;").set(faction.getName()).executeQuery();
                 while (claimQuery.next()) {
-                    Claim claim = new Claim(claimQuery.getInt("x"), claimQuery.getInt("z"), claimQuery.getString("level"), faction.getID());
+                    Claim claim = new Claim(claimQuery.getInt("x"),claimQuery.getInt("y"), claimQuery.getInt("z"), claimQuery.getString("level"), faction.getID());
                     Claim.add(claim);
                 }
 

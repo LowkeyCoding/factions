@@ -12,9 +12,6 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralTextContent;
-import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.ChunkPos;
 
@@ -36,7 +33,7 @@ public class MapCommand implements Command{
         for (int z = -4; z <= 5; z++) { // Rows (10)
             Message row = new Message("");
             for (int x = -5; x <= 5; x++) { // Columns (11)
-                Claim claim = Claim.get(chunkPos.x + x, chunkPos.z + z, dimension);
+                Claim claim = Claim.get(chunkPos.x + x,player.getBlockY()/16, chunkPos.z + z, dimension);
                 if (x == 0 && z == 0) { // Check if middle (your chunk)
                     if (claim == null) {
                         row.add(new Message("⏺").format(Formatting.DARK_GRAY).hover("<You> <Wilderness>"));

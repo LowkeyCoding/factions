@@ -11,10 +11,13 @@ import io.icker.factions.database.Name;
 
 @Name("Claim")
 public class Claim {
-    private static final HashMap<String, Claim> STORE = Database.load(Claim.class, c -> c.getKey());
+    private static final HashMap<String, Claim> STORE = Database.load(Claim.class, Claim::getKey);
 
     @Field("X")
     public int x;
+
+    @Field("Y")
+    public int y;
 
     @Field("Z")
     public int z;
@@ -25,8 +28,9 @@ public class Claim {
     @Field("FactionID")
     public UUID factionID;
 
-    public Claim(int x, int z, String level, UUID factionID) {
+    public Claim(int x, int y, int z, String level, UUID factionID) {
         this.x = x;
+        this.y = y;
         this.z = z;
         this.level = level;
         this.factionID = factionID;
@@ -35,11 +39,11 @@ public class Claim {
     public Claim() { ; }
 
     public String getKey() {
-        return String.format("%s-%d-%d", level, x, z);
+        return String.format("%s-%d-%d-%d", level, x, y, z);
     }
 
-    public static Claim get(int x, int z, String level) {
-        return STORE.get(String.format("%s-%d-%d", level, x, z));
+    public static Claim get(int x, int y, int z, String level) {
+        return STORE.get(String.format("%s-%d-%d-%d", level, x, y, z));
     }
 
     public static List<Claim> getByFaction(UUID factionID) {
@@ -60,7 +64,7 @@ public class Claim {
 
     public void remove() {
         STORE.remove(getKey());
-        ClaimEvents.REMOVE.invoker().onRemove(x, z, level, Faction.get(factionID));
+        ClaimEvents.REMOVE.invoker().onRemove(x, y, z, level, Faction.get(factionID));
     }
 
     public static void save() {

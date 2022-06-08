@@ -79,8 +79,8 @@ public class DynmapWrapper {
         addClaim(claim, getInfo(claim.getFaction()));
     }
 
-    private void removeClaim(int x, int z, String level, Faction faction) {
-        String areaMarkerId = String.format("%s-%d-%d", level, x, z);
+    private void removeClaim(int x, int y, int z, String level, Faction faction) {
+        String areaMarkerId = String.format("%s-%d-%d-%d", level, x, y, z);
         markerSet.findAreaMarker(areaMarkerId).deleteMarker();
     }
 

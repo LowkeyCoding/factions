@@ -6,12 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import com.sun.jna.platform.win32.WinDef;
 import io.icker.factions.FactionsMod;
 import io.icker.factions.api.events.FactionEvents;
 import io.icker.factions.api.events.HomeEvents;
 import io.icker.factions.database.Database;
 import io.icker.factions.database.Field;
 import io.icker.factions.database.Name;
+import io.icker.factions.util.Point;
 import net.minecraft.util.Formatting;
 
 @Name("Faction")
@@ -39,6 +41,9 @@ public class Faction {
     @Field("Power")
     private int power;
 
+    @Field("VerticalRange")
+    private Point verticalRange;
+
     @Field("Home")
     private Home home;
 
@@ -56,6 +61,7 @@ public class Faction {
         this.color = color.getName();
         this.open = open;
         this.power = power;
+        this.verticalRange = new Point();
     }
 
     public Faction() { ; }
@@ -94,7 +100,6 @@ public class Faction {
     public UUID getID() {
         return id;
     }
-
     public String getName() {
         return name;
     }
@@ -117,6 +122,9 @@ public class Faction {
 
     public boolean isOpen() {
         return open;
+    }
+    public Point getVerticalRange() {
+        return verticalRange;
     }
 
     public void setName(String name) {
@@ -144,6 +152,12 @@ public class Faction {
         FactionEvents.MODIFY.invoker().onModify(this);
     }
 
+
+    public void setVerticalRange(int lower_bound, int upper_bound) {
+        verticalRange.setLocation(lower_bound, upper_bound);
+        FactionEvents.MODIFY.invoker().onModify(this);
+    }
+
     public int adjustPower(int adjustment) {
         int maxPower = FactionsMod.CONFIG.BASE_POWER + (getUsers().size() * FactionsMod.CONFIG.MEMBER_POWER);
         int newPower = Math.min(Math.max(0, power + adjustment), maxPower);
@@ -164,13 +178,12 @@ public class Faction {
 
     public void removeAllClaims() {
         Claim.getByFaction(id)
-            .stream()
-            .forEach(c -> c.remove());
+            .forEach(Claim::remove);
         FactionEvents.REMOVE_ALL_CLAIMS.invoker().onRemoveAllClaims(this);
     }
 
-    public void addClaim(int x, int z, String level) {
-        Claim.add(new Claim(x, z, level, id));
+    public void addClaim(int x, int y, int z, String level) {
+        Claim.add(new Claim(x, y, z, level, id));
     }
 
     public ArrayList<UUID> getInvites() {

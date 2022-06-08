@@ -11,6 +11,8 @@ import io.icker.factions.api.persistents.Faction;
 import io.icker.factions.api.persistents.User;
 import io.icker.factions.util.Command;
 import io.icker.factions.util.Message;
+import io.icker.factions.util.Point;
+import io.icker.factions.util.SubChunk;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,6 +20,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.ChunkPos;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,35 +76,43 @@ public class ClaimCommand implements Command {
 
         Faction faction = User.get(player.getUuid()).getFaction();
         String dimension = world.getRegistryKey().getValue().toString();
-        ArrayList<ChunkPos> chunks = new ArrayList<ChunkPos>();
+        ArrayList<SubChunk> chunks = new ArrayList<SubChunk>();
+        int lowerBound = faction.getVerticalRange().getX();
+        int upperBound = faction.getVerticalRange().getY();
+        if(lowerBound == upperBound) {
+            new Message("Set player VerticalClaimRange using \"/f modify VerticalClaimRange lower upper\"").fail().send(player, false);
+            return 0;
+        }
 
         for (int x = -size + 1; x < size; x++) {
-            for (int y = -size + 1; y < size; y++) {
-                ChunkPos chunkPos = world.getChunk(player.getBlockPos().add(x * 16, 0, y * 16)).getPos();
-                Claim existingClaim = Claim.get(chunkPos.x, chunkPos.z, dimension);
+            for(int y = lowerBound;  y < upperBound; y++) {
+                for (int z = -size + 1; z < size; z++) {
+                    ChunkPos chunkPos = world.getChunk(player.getBlockPos().add(x * 16, 0, z * 16)).getPos();
+                    Claim existingClaim = Claim.get(chunkPos.x, y, chunkPos.z, dimension);
 
-                if (existingClaim != null) {
-                    if (size == 1) {
-                        String owner = existingClaim.getFaction().getID() == faction.getID() ? "Your" : "Another";
-                        new Message(owner + " faction already owns this chunk").fail().send(player, false);
-                        return 0;
-                    } else if (existingClaim.getFaction().getID() != faction.getID()) {
-                        new Message("Another faction already owns a chunk").fail().send(player, false);
-                        return 0;
+                    if (existingClaim != null) {
+                        if (size == 1) {
+                            String owner = existingClaim.getFaction().getID() == faction.getID() ? "Your" : "Another";
+                            new Message(owner + " faction already owns this chunk").fail().send(player, false);
+                            return 0;
+                        } else if (existingClaim.getFaction().getID() != faction.getID()) {
+                            new Message("Another faction already owns a chunk").fail().send(player, false);
+                            return 0;
+                        }
                     }
-                }
 
-                chunks.add(chunkPos);
+                    chunks.add(new SubChunk(chunkPos.x, y, chunkPos.z));
+                }
             }
         }
 
-        chunks.forEach(chunk -> faction.addClaim(chunk.x, chunk.z, dimension));
+        chunks.forEach(chunk -> faction.addClaim(chunk.getX(), chunk.getY(), chunk.getZ(), dimension));
         if (size == 1) {
-            new Message("Chunk (%d, %d) claimed by %s", chunks.get(0).x, chunks.get(0).z, player.getName().getString())
+            new Message("Chunk (%d, %d, %d) claimed by %s", chunks.get(0).getX(), chunks.get(0).getY(), chunks.get(0).getZ(), player.getName().getString())
                 .send(faction);
         } else {
-            new Message("Chunks (%d, %d) to (%d, %d) claimed by %s", chunks.get(0).x, chunks.get(0).z,
-                    chunks.get(0).x + size - 1, chunks.get(0).z + size - 1, player.getName().getString())
+            new Message("Chunks (%d, %d, %d) to (%d, %d, %d) claimed by %s", chunks.get(0).getX(), chunks.get(0).getY(), chunks.get(0).getZ(),
+                    chunks.get(chunks.size()-1).getX(), chunks.get(chunks.size()-1).getY(), chunks.get(chunks.size()-1).getZ(), player.getName().getString())
                 .send(faction);
         }
 
@@ -148,7 +159,7 @@ public class ClaimCommand implements Command {
         ChunkPos chunkPos = world.getChunk(player.getBlockPos()).getPos();
         String dimension = world.getRegistryKey().getValue().toString();
 
-        Claim existingClaim = Claim.get(chunkPos.x, chunkPos.z, dimension);
+        Claim existingClaim = Claim.get(chunkPos.x, player.getBlockY()/16, chunkPos.z, dimension);
 
         if (existingClaim == null) {
             new Message("Cannot remove a claim on an unclaimed chunk").fail().send(player, false);
@@ -182,7 +193,7 @@ public class ClaimCommand implements Command {
         for (int x = -size + 1; x < size; x++) {
             for (int y = -size + 1; y < size; y++) {
                 ChunkPos chunkPos = world.getChunk(player.getBlockPos().add(x * 16, 0, y * 16)).getPos();
-                Claim existingClaim = Claim.get(chunkPos.x, chunkPos.z, dimension);
+                Claim existingClaim = Claim.get(chunkPos.x,player.getBlockY()/16, chunkPos.z, dimension);
 
                 if (existingClaim != null && (user.isBypassOn() || existingClaim.getFaction().getID() == faction.getID())) existingClaim.remove();
             }

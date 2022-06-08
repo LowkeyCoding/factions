@@ -36,9 +36,9 @@ public class InteractionManager {
     }
 
     private static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
-        if (checkPermissions(player, player.getBlockPos(), world) == ActionResult.FAIL) {
+        /* if (checkPermissions(player, player.getBlockPos(), world) == ActionResult.FAIL) {
             return ActionResult.FAIL;
-        }
+        } */
 
         BlockPos hitPos = hitResult.getBlockPos();
         if (checkPermissions(player, hitPos, world) == ActionResult.FAIL) {
@@ -135,7 +135,8 @@ public class InteractionManager {
         String dimension = world.getRegistryKey().getValue().toString();
         ChunkPos chunkPosition = world.getChunk(position).getPos();
 
-        Claim claim = Claim.get(chunkPosition.x, chunkPosition.z, dimension);
+        int YPos = (int)Math.floor((double)position.getY()/16);
+        Claim claim = Claim.get(chunkPosition.x, YPos, chunkPosition.z, dimension);
         if (claim == null) return ActionResult.PASS;
 
         if (!user.isInFaction()) {

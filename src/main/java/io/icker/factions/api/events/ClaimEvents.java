@@ -12,9 +12,9 @@ public final class ClaimEvents {
         }
     });
 
-    public static final Event<Remove> REMOVE = EventFactory.createArrayBacked(Remove.class, callbacks -> (x, z, level, faction) -> {
+    public static final Event<Remove> REMOVE = EventFactory.createArrayBacked(Remove.class, callbacks -> (x, y, z, level, faction) -> {
         for (Remove callback : callbacks) {
-            callback.onRemove(x, z, level, faction);
+            callback.onRemove(x, y, z, level, faction);
         }
     });
 
@@ -25,6 +25,6 @@ public final class ClaimEvents {
 
     @FunctionalInterface
     public interface Remove {
-        void onRemove(int x, int z, String level, Faction faction);
+        void onRemove(int x, int y, int z, String level, Faction faction);
     }
 }
