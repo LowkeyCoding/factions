@@ -158,13 +158,16 @@ public class Faction {
         FactionEvents.MODIFY.invoker().onModify(this);
     }
 
+    public void increasePower(int amount) {
+        this.power += amount;
+    }
     public int adjustPower(int adjustment) {
         int maxPower = FactionsMod.CONFIG.BASE_POWER + (getUsers().size() * FactionsMod.CONFIG.MEMBER_POWER);
         int newPower = Math.min(Math.max(0, power + adjustment), maxPower);
         int oldPower = this.power;
 
-        power = newPower;
-        FactionEvents.POWER_CHANGE.invoker().onPowerChange(this, oldPower);
+        //power = newPower;
+        //FactionEvents.POWER_CHANGE.invoker().onPowerChange(this, oldPower);
         return Math.abs(newPower - oldPower);
     }
 

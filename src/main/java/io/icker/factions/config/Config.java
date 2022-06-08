@@ -63,7 +63,13 @@ public class Config {
 
     @SerializedName("memberPower")
     public int MEMBER_POWER = 20;
-    
+
+    @SerializedName("depositPower")
+    public int DEPOSIT_POWER = 10;
+
+    @SerializedName("depositItemID")
+    public int DEPOSIT_ITEM_ID = 722;
+
     @SerializedName("claimWeight")
     public int CLAIM_WEIGHT = 5;
 
