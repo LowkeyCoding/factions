@@ -155,28 +155,36 @@ public class ClaimCommand implements Command {
 
         ServerPlayerEntity player = source.getPlayer();
         ServerWorld world = player.getWorld();
+        User user = User.get(player.getUuid());
+        Faction faction = user.getFaction();
 
         ChunkPos chunkPos = world.getChunk(player.getBlockPos()).getPos();
         String dimension = world.getRegistryKey().getValue().toString();
 
-        Claim existingClaim = Claim.get(chunkPos.x, player.getBlockY()/16, chunkPos.z, dimension);
-
-        if (existingClaim == null) {
-            new Message("Cannot remove a claim on an unclaimed chunk").fail().send(player, false);
+        int lowerBound = faction.getVerticalRange().getX();
+        int upperBound = faction.getVerticalRange().getY();
+        if(lowerBound == upperBound) {
+            new Message("Set player VerticalClaimRange using \"/f modify VerticalClaimRange lower upper\"").fail().send(player, false);
             return 0;
         }
+        for(int y = lowerBound;  y < upperBound; y++) {
+            Claim existingClaim = Claim.get(chunkPos.x, y, chunkPos.z, dimension);
+            if (existingClaim == null) {
+                new Message("Cannot remove a claim on an unclaimed chunk").fail().send(player, false);
+                return 0;
+            }
 
-        User user = User.get(player.getUuid());
-        Faction faction = user.getFaction();
 
-        if (!user.isBypassOn() && existingClaim.getFaction().getID() != faction.getID()) {
-            new Message("Cannot remove a claim owned by another faction").fail().send(player, false);
-            return 0;
+            if (!user.isBypassOn() && existingClaim.getFaction().getID() != faction.getID()) {
+                new Message("Cannot remove a claim owned by another faction").fail().send(player, false);
+                return 0;
+            }
+
+            existingClaim.remove();
+            new Message("Claim (%d, %d) removed by %s", existingClaim.x, existingClaim.z, player.getName().getString()).send(faction);
         }
-
-        existingClaim.remove();
-        new Message("Claim (%d, %d) removed by %s", existingClaim.x, existingClaim.z, player.getName().getString()).send(faction);
         return 1;
+
     }
 
     private int removeSize(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -190,12 +198,22 @@ public class ClaimCommand implements Command {
         User user = User.get(player.getUuid());
         Faction faction = user.getFaction();
 
-        for (int x = -size + 1; x < size; x++) {
-            for (int y = -size + 1; y < size; y++) {
-                ChunkPos chunkPos = world.getChunk(player.getBlockPos().add(x * 16, 0, y * 16)).getPos();
-                Claim existingClaim = Claim.get(chunkPos.x,player.getBlockY()/16, chunkPos.z, dimension);
+        int lowerBound = faction.getVerticalRange().getX();
+        int upperBound = faction.getVerticalRange().getY();
+        if(lowerBound == upperBound) {
+            new Message("Set player VerticalClaimRange using \"/f modify VerticalClaimRange lower upper\"").fail().send(player, false);
+            return 0;
+        }
 
-                if (existingClaim != null && (user.isBypassOn() || existingClaim.getFaction().getID() == faction.getID())) existingClaim.remove();
+        for (int x = -size + 1; x < size; x++) {
+            for(int y = lowerBound;  y < upperBound; y++) {
+                for (int z = -size + 1; z < size; z++) {
+                    ChunkPos chunkPos = world.getChunk(player.getBlockPos().add(x * 16, 0, z * 16)).getPos();
+                    Claim existingClaim = Claim.get(chunkPos.x, y, chunkPos.z, dimension);
+
+                    if (existingClaim != null && (user.isBypassOn() || existingClaim.getFaction().getID() == faction.getID()))
+                        existingClaim.remove();
+                }
             }
         }
 
