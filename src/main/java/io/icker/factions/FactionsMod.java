@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import io.icker.factions.core.ChatManager;
+import io.icker.factions.database.Database;
 import net.minecraft.command.CommandRegistryAccess;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,6 +44,8 @@ public class FactionsMod implements ModInitializer {
         InteractionManager.register();
         ServerManager.register();
         WorldManager.register();
+
+        Database.Initialize();
 
         CommandRegistrationCallback.EVENT.register(FactionsMod::registerCommands);
     }
