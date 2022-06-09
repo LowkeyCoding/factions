@@ -22,6 +22,13 @@ public class Database {
     private static final HashMap<Class<?>, HashMap<String, Field>> cache = new HashMap<Class<?>, HashMap<String, Field>>();
     private static final String KEY = "CORE";
 
+    public static void Initialize() {
+        if (!BASE_PATH.exists()) {
+            if (!BASE_PATH.mkdirs())
+                FactionsMod.LOGGER.error("Failed to create factions directory");
+        }
+    }
+
     public static <T, E> HashMap<E, T> load(Class<T> clazz, Function<T, E> getStoreKey) {
         String name = clazz.getAnnotation(Name.class).value();
         File file = new File(BASE_PATH, name.toLowerCase() + ".dat");
