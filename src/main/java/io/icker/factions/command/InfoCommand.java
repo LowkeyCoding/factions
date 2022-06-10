@@ -12,6 +12,7 @@ import io.icker.factions.api.persistents.User;
 import io.icker.factions.api.persistents.User.Rank;
 import io.icker.factions.util.Command;
 import io.icker.factions.util.Message;
+import io.icker.factions.util.Point;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -69,9 +70,6 @@ public class InfoCommand implements Command {
             .map(user -> cache.getByUuid(user.getID()).orElse(new GameProfile(Util.NIL_UUID, "{Uncached Player}")).getName())
             .collect(Collectors.joining(", "));
 
-        int requiredPower = faction.getClaims().size() * FactionsMod.CONFIG.CLAIM_WEIGHT;
-        int maxPower = users.size() * FactionsMod.CONFIG.MEMBER_POWER + FactionsMod.CONFIG.BASE_POWER;
-
         new Message(Formatting.GRAY + faction.getDescription())
             .prependFaction(faction)
             .send(player, false);
@@ -82,10 +80,12 @@ public class InfoCommand implements Command {
             .add(leaderText)
             .hover(usersList)
             .send(player, false);
-        new Message("Power")
+        new Message("Info")
             .filler("·")
-            .add(Formatting.GREEN.toString() + faction.getPower() + slash() + requiredPower + slash() + maxPower)
-            .hover("Current / Required / Max")
+            .add(Formatting.GREEN.toString() + faction.claimableChunks() + slash()
+                    + faction.claimedChunks() + slash() + faction.getPower() + slash()
+                            + faction.getClaims().size() * (FactionsMod.CONFIG.CLAIM_WEIGHT))
+            .hover("Claimable / Claimed / Power / Used Power")
             .send(player, false);
 
         User user = User.get(player.getUuid());

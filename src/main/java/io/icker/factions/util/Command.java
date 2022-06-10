@@ -27,7 +27,7 @@ public interface Command {
         }
 
         public static Predicate<ServerCommandSource> isMember() {
-            return require(user -> user.isInFaction());
+            return require(User::isInFaction);
         }
 
         public static Predicate<ServerCommandSource> isCommander() {
@@ -66,7 +66,7 @@ public interface Command {
             return suggest(user ->
                 Faction.all()
                     .stream()
-                    .map(f -> f.getName())
+                    .map(Faction::getName)
                     .toArray(String[]::new)
             );
         }
@@ -75,8 +75,8 @@ public interface Command {
             return suggest(user ->
                 Faction.all()
                     .stream()
-                    .filter(f -> f.isOpen())
-                    .map(f -> f.getName())
+                    .filter(Faction::isOpen)
+                    .map(Faction::getName)
                     .toArray(String[]::new)
             );
         }
@@ -86,7 +86,7 @@ public interface Command {
                 Faction.all()
                     .stream()
                     .filter(f -> f.isOpen() || f.isInvited(user.getID()))
-                    .map(f -> f.getName())
+                    .map(Faction::getName)
                     .toArray(String[]::new)
             );
         }

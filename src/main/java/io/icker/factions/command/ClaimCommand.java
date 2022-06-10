@@ -5,13 +5,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import io.icker.factions.FactionsMod;
 import io.icker.factions.api.persistents.Claim;
 import io.icker.factions.api.persistents.Faction;
 import io.icker.factions.api.persistents.User;
 import io.icker.factions.util.Command;
 import io.icker.factions.util.Message;
-import io.icker.factions.util.Point;
 import io.icker.factions.util.SubChunk;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -20,7 +18,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.ChunkPos;
 
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,9 +81,9 @@ public class ClaimCommand implements Command {
             return 0;
         }
 
-        for (int x = -size + 1; x < size; x++) {
-            for(int y = lowerBound;  y < upperBound; y++) {
-                for (int z = -size + 1; z < size; z++) {
+        for (int x = -size+1; x <= size; x++) {
+            for(int y = lowerBound;  y <= upperBound; y++) {
+                for (int z = -size+1; z <= size; z++) {
                     ChunkPos chunkPos = world.getChunk(player.getBlockPos().add(x * 16, 0, z * 16)).getPos();
                     Claim existingClaim = Claim.get(chunkPos.x, y, chunkPos.z, dimension);
 
@@ -101,18 +98,18 @@ public class ClaimCommand implements Command {
                         }
                     }
 
-                    chunks.add(new SubChunk(chunkPos.x, y, chunkPos.z));
+                    chunks.add(new SubChunk(chunkPos.x, y, chunkPos.z, dimension));
                 }
             }
         }
 
-        chunks.forEach(chunk -> faction.addClaim(chunk.getX(), chunk.getY(), chunk.getZ(), dimension));
+        chunks.forEach(chunk -> faction.addClaim(chunk.getX(), chunk.getY(), chunk.getZ(), chunk.getLevel()));
         if (size == 1) {
             new Message("Chunk (%d, %d, %d) claimed by %s", chunks.get(0).getX(), chunks.get(0).getY(), chunks.get(0).getZ(), player.getName().getString())
                 .send(faction);
         } else {
             new Message("Chunks (%d, %d, %d) to (%d, %d, %d) claimed by %s", chunks.get(0).getX(), chunks.get(0).getY(), chunks.get(0).getZ(),
-                    chunks.get(chunks.size()-1).getX(), chunks.get(chunks.size()-1).getY(), chunks.get(chunks.size()-1).getZ(), player.getName().getString())
+                    chunks.get(chunks.size()-1).getX()+size, chunks.get(chunks.size()-1).getY(), chunks.get(chunks.size()-1).getZ()+size, player.getName().getString())
                 .send(faction);
         }
 
@@ -123,10 +120,7 @@ public class ClaimCommand implements Command {
         ServerPlayerEntity player = context.getSource().getPlayer();
         Faction faction = User.get(player.getUuid()).getFaction();
 
-        int requiredPower = (faction.getClaims().size() + 1) * FactionsMod.CONFIG.CLAIM_WEIGHT;
-        int maxPower = faction.getUsers().size() * FactionsMod.CONFIG.MEMBER_POWER + FactionsMod.CONFIG.BASE_POWER;
-
-        if (maxPower < requiredPower) {
+        if (faction.getPower() < faction.requiredPower(1)) {
             new Message("Not enough faction power to claim chunk").fail().send(player, false);
             return 0;
         }
@@ -139,10 +133,7 @@ public class ClaimCommand implements Command {
         ServerPlayerEntity player = context.getSource().getPlayer();
         Faction faction = User.get(player.getUuid()).getFaction();
 
-        int requiredPower = (faction.getClaims().size() + (int)Math.pow(size * 2 - 1, 2)) * FactionsMod.CONFIG.CLAIM_WEIGHT;
-        int maxPower = faction.getUsers().size() * FactionsMod.CONFIG.MEMBER_POWER + FactionsMod.CONFIG.BASE_POWER;
-
-        if (maxPower < requiredPower) {
+        if (faction.getPower() < faction.requiredPower((int) Math.pow(size,4))) {
             new Message("Not enough faction power to claim chunks").fail().send(player, false);
             return 0;
         }
@@ -167,7 +158,7 @@ public class ClaimCommand implements Command {
             new Message("Set player VerticalClaimRange using \"/f modify VerticalClaimRange lower upper\"").fail().send(player, false);
             return 0;
         }
-        for(int y = lowerBound;  y < upperBound; y++) {
+        for(int y = lowerBound;  y <= upperBound; y++) {
             Claim existingClaim = Claim.get(chunkPos.x, y, chunkPos.z, dimension);
             if (existingClaim == null) {
                 new Message("Cannot remove a claim on an unclaimed chunk").fail().send(player, false);
@@ -206,7 +197,7 @@ public class ClaimCommand implements Command {
         }
 
         for (int x = -size + 1; x < size; x++) {
-            for(int y = lowerBound;  y < upperBound; y++) {
+            for(int y = lowerBound;  y <= upperBound; y++) {
                 for (int z = -size + 1; z < size; z++) {
                     ChunkPos chunkPos = world.getChunk(player.getBlockPos().add(x * 16, 0, z * 16)).getPos();
                     Claim existingClaim = Claim.get(chunkPos.x, y, chunkPos.z, dimension);

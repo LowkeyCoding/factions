@@ -30,7 +30,7 @@ public class DepositCommand  implements Command {
         int count = item.getCount();
         if(id == FactionsMod.CONFIG.DEPOSIT_ITEM_ID){
             item.decrement(count);
-            faction.increasePower(FactionsMod.CONFIG.DEPOSIT_POWER*count);
+            faction.adjustPower(FactionsMod.CONFIG.DEPOSIT_POWER*count);
         } else {
             new Message(item.getName() + " Cannot be used to deposit! Only diamonds are allowed").fail().send(player, false);
             return 0;

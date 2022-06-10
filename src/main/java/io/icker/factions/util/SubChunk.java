@@ -5,10 +5,13 @@ public class SubChunk {
     private int y;
     private int z;
 
-    public SubChunk(int x, int y, int z){
+    private String level;
+
+    public SubChunk(int x, int y, int z, String level){
         this.x = x;
         this.y = y;
         this.z = z;
+        this.level = level;
     }
 
     public int getX() {
@@ -22,6 +25,7 @@ public class SubChunk {
     public int getZ() {
         return z;
     }
+    public String getLevel() { return this.level; }
 
     public void setX(int x) {
         this.x = x;
@@ -34,4 +38,6 @@ public class SubChunk {
     public void setZ(int z) {
         this.z = z;
     }
+
+    public void setLevel(String level) { this.level = level; }
 }

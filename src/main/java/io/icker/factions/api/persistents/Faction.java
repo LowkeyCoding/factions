@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import com.sun.jna.platform.win32.WinDef;
 import io.icker.factions.FactionsMod;
 import io.icker.factions.api.events.FactionEvents;
 import io.icker.factions.api.events.HomeEvents;
@@ -61,7 +60,7 @@ public class Faction {
         this.color = color.getName();
         this.open = open;
         this.power = power;
-        this.verticalRange = new Point();
+        this.verticalRange = new Point(-4, -3);
     }
 
     public Faction() { ; }
@@ -158,18 +157,41 @@ public class Faction {
         FactionEvents.MODIFY.invoker().onModify(this);
     }
 
-    public void increasePower(int amount) {
-        this.power += amount;
-    }
     public int adjustPower(int adjustment) {
-        int maxPower = FactionsMod.CONFIG.BASE_POWER + (getUsers().size() * FactionsMod.CONFIG.MEMBER_POWER);
-        int newPower = Math.min(Math.max(0, power + adjustment), maxPower);
+        int newPower = Math.max(0, this.power + adjustment);
         int oldPower = this.power;
 
-        //power = newPower;
-        //FactionEvents.POWER_CHANGE.invoker().onPowerChange(this, oldPower);
+        this.power = newPower;
+        FactionEvents.POWER_CHANGE.invoker().onPowerChange(this, oldPower);
         return Math.abs(newPower - oldPower);
     }
+
+    public int requiredPower(int size){
+        int lowerBound = verticalRange.getX();
+        int upperBound = verticalRange.getY();
+        int diff = (Math.abs(lowerBound) - Math.abs(upperBound));
+        return (this.claimedChunks()+size) * (FactionsMod.CONFIG.CLAIM_WEIGHT * diff);
+    }
+
+    public int claimedChunks(){
+        int lowerBound = verticalRange.getX();
+        int upperBound = verticalRange.getY();
+        int diff = (Math.abs(lowerBound) - Math.abs(upperBound));
+        return this.getClaims().size() == 0 ? 0 : this.getClaims().size() / diff;
+    }
+
+    public int usablePower(){
+        return this.getPower() - (this.getClaims().size() * FactionsMod.CONFIG.CLAIM_WEIGHT);
+    }
+
+
+    public int claimableChunks(){
+        int lowerBound = verticalRange.getX();
+        int upperBound = verticalRange.getY();
+        int diff = (Math.abs(lowerBound) - Math.abs(upperBound));
+        return this.usablePower() / (FactionsMod.CONFIG.CLAIM_WEIGHT * diff);
+    }
+
 
     public List<User> getUsers() {
         return User.getByFaction(id);

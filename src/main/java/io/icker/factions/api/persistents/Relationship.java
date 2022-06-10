@@ -9,6 +9,7 @@ public class Relationship {
         ALLY,
         NEUTRAL,
         ENEMY,
+        WAR,
     }
 
     @Field("Target")
