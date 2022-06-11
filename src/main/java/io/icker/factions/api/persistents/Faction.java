@@ -261,6 +261,9 @@ public class Faction {
     }
 
     public static void save() {
-        Database.save(Faction.class, STORE.values().stream().toList());
+        List<Faction> factionList = STORE.values().stream().toList();
+        if (!factionList.isEmpty()) {
+            Database.save(Faction.class, factionList);
+        }
     }
 }

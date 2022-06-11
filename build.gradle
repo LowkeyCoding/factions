@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '0.12-SNAPSHOT'
     id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm' version '1.7.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -13,6 +14,7 @@ group = project.maven_group
 repositories {
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     maven { url = "https://repo.mikeprimm.com/" }
+    mavenCentral()
 }
 
 loom {
@@ -29,6 +31,7 @@ dependencies {
     include "me.lucko:fabric-permissions-api:${project.lucko_permissions_version}"
     compileOnly "us.dynmap:DynmapCoreAPI:${project.dynmap_api_version}"
     implementation(include("com.h2database:h2:${project.h2_version}"))
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 processResources {
@@ -58,5 +61,15 @@ publishing {
         mavenJava(MavenPublication) {
             from components.java
         }
+    }
+}
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
