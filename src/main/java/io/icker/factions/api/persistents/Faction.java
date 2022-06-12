@@ -169,15 +169,15 @@ public class Faction {
     public int requiredPower(int size){
         int lowerBound = verticalRange.getX();
         int upperBound = verticalRange.getY();
-        int diff = (Math.abs(lowerBound) - Math.abs(upperBound));
+        int diff = (Math.abs(lowerBound) - Math.abs(upperBound))+1;
         return (this.claimedChunks()+size) * (FactionsMod.CONFIG.CLAIM_WEIGHT * diff);
     }
 
-    public int claimedChunks(){
+    public int claimedChunks() {
         int lowerBound = verticalRange.getX();
         int upperBound = verticalRange.getY();
-        int diff = (Math.abs(lowerBound) - Math.abs(upperBound));
-        return this.getClaims().size() == 0 ? 0 : this.getClaims().size() / diff;
+        int diff = (Math.abs(lowerBound) - Math.abs(upperBound))+1;
+        return this.getClaims().size() == 0 || diff == 0  ? 0 : this.getClaims().size() / diff;
     }
 
     public int usablePower(){
@@ -185,11 +185,11 @@ public class Faction {
     }
 
 
-    public int claimableChunks(){
+    public int claimableChunks() {
         int lowerBound = verticalRange.getX();
         int upperBound = verticalRange.getY();
-        int diff = (Math.abs(lowerBound) - Math.abs(upperBound));
-        return this.usablePower() / (FactionsMod.CONFIG.CLAIM_WEIGHT * diff);
+        int diff = (Math.abs(lowerBound) - Math.abs(upperBound))+1;
+        return this.usablePower() == 0 || diff == 0 ? 0 : this.usablePower()  / (FactionsMod.CONFIG.CLAIM_WEIGHT * diff);
     }
 
 

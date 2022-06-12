@@ -69,7 +69,7 @@ public class InfoCommand implements Command {
         String usersList = users.stream()
             .map(user -> cache.getByUuid(user.getID()).orElse(new GameProfile(Util.NIL_UUID, "{Uncached Player}")).getName())
             .collect(Collectors.joining(", "));
-
+        Point claimRange = faction.getVerticalRange();
         new Message(Formatting.GRAY + faction.getDescription())
             .prependFaction(faction)
             .send(player, false);
@@ -80,6 +80,8 @@ public class InfoCommand implements Command {
             .add(leaderText)
             .hover(usersList)
             .send(player, false);
+        new Message(Formatting.BOLD + "Vertical Claim range: "+ Formatting.GRAY + "(" + claimRange.getX() + "," + claimRange.getY() + ")")
+                .send(player, false);
         new Message("Info")
             .filler("·")
             .add(Formatting.GREEN.toString() + faction.claimableChunks() + slash()

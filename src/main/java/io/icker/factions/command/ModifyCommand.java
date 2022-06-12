@@ -110,8 +110,12 @@ public class ModifyCommand implements Command {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        Faction faction = User.get(player.getUuid()).getFaction();
+        if(lower_bound > upper_bound){
+            new Message("Failed to set VerticalClaimRange: The lower bound value needs to be less than or equal to the upper bound").fail().send(player, false);
+            return 0;
+        }
 
+        Faction faction = User.get(player.getUuid()).getFaction();
         faction.setVerticalRange(lower_bound, upper_bound);
         new Message("Successfully updated faction vertical claim area to (" + lower_bound + "," + upper_bound + ")" )
                 .prependFaction(faction)

@@ -1,7 +1,13 @@
 package io.icker.factions.util;
 
+import io.icker.factions.database.Field;
+import io.icker.factions.database.Name;
+
+@Name("Point")
 public class Point {
+    @Field("X")
     private int x;
+    @Field("Y")
     private int y;
 
     public Point(int x, int y){
