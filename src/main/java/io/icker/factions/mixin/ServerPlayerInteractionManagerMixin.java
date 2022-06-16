@@ -1,5 +1,7 @@
 package io.icker.factions.mixin;
 
+import io.icker.factions.api.events.PlayerEvents;
+import io.icker.factions.core.InteractionsUtil;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -15,9 +17,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import io.icker.factions.api.events.PlayerEvents;
-import io.icker.factions.core.InteractionsUtil;
 
 @Mixin(ServerPlayerInteractionManager.class)
 public class ServerPlayerInteractionManagerMixin {
@@ -50,7 +49,6 @@ public class ServerPlayerInteractionManagerMixin {
     @Inject(at = @At("HEAD"), method = "interactItem", cancellable = true)
     public void interactItem(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, CallbackInfoReturnable<ActionResult> info) {
         ActionResult result = PlayerEvents.USE_ITEM.invoker().onUseItem(player, world, stack, hand);
-
         if (result == ActionResult.FAIL) {
             if (stack == ItemStack.EMPTY || !(stack.getItem() instanceof BucketItem)) {
                 InteractionsUtil.warn(player, "use items");

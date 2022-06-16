@@ -3,6 +3,7 @@ package io.icker.factions.config;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -12,7 +13,7 @@ import io.icker.factions.FactionsMod;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class Config {
-    private static final int REQUIRED_VERSION = 2;
+    private static final int REQUIRED_VERSION = 3;
     private static final File file = FabricLoader.getInstance().getGameDir().resolve("config").resolve("factions.json").toFile();
 
     public static Config load() {
@@ -20,15 +21,18 @@ public class Config {
 
         try {
             if (!file.exists()) {
-                file.getParentFile().mkdir();
+                if(file.getParentFile().mkdir()) {
 
-                Config defaults = new Config();
+                    Config defaults = new Config();
 
-                FileWriter writer = new FileWriter(file);
-                gson.toJson(defaults, writer);
-                writer.close();
+                    FileWriter writer = new FileWriter(file);
+                    gson.toJson(defaults, writer);
+                    writer.close();
 
-                return defaults;
+                    return defaults;
+                } else {
+                    throw new IOException("An error occurred while creating the factions directory");
+                }
             }
     
             Config config = gson.fromJson(new FileReader(file), Config.class);
@@ -44,6 +48,29 @@ public class Config {
         }
     }
 
+    public void save(){
+        Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+        try {
+            if (file.exists()) {
+                FileWriter writer = new FileWriter(file);
+                gson.toJson(this, writer);
+                writer.close();
+            } else {
+                throw new IOException("An error occurred while creating the factions directory");
+            }
+        } catch (Exception e) {
+            FactionsMod.LOGGER.error("An error occurred reading the factions config file", e);
+        }
+    }
+
+    public boolean modeIsStrict(){
+        return  this.INTERACTION_MODE == InteractionModes.STRICT;
+    }
+
+    public boolean modeIsRelaxed(){
+        return this.INTERACTION_MODE == InteractionModes.RELAXED;
+    }
+
     public enum HomeOptions {
         @SerializedName("ANYWHERE")
         ANYWHERE,
@@ -53,6 +80,17 @@ public class Config {
 
         @SerializedName("DISABLED")
         DISABLED
+    }
+
+    public enum InteractionModes {
+        @SerializedName("STRICT")
+        STRICT,
+
+        @SerializedName("DEFAULT")
+        DEFAULT,
+
+        @SerializedName("RELAXED")
+        RELAXED
     }
 
     @SerializedName("version")
@@ -99,6 +137,12 @@ public class Config {
 
     @SerializedName("friendlyFireEnabled")
     public boolean FRIENDLY_FIRE = false;
+
+    @SerializedName("InteractionMode")
+    public InteractionModes INTERACTION_MODE = InteractionModes.DEFAULT;
+
+    @SerializedName("AllowInteractionWithEntity")
+    public boolean ALLOW_INTERACTION_WITH_ENTITY = true;
 
     @SerializedName("chatModificationEnabled")
     public boolean MODIFY_CHAT = true;
