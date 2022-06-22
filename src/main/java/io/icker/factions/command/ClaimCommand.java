@@ -81,9 +81,9 @@ public class ClaimCommand implements Command {
             return 0;
         }
 
-        for (int x = -size+1; x <= size; x++) {
+        for (int x = -size+1; x < size; x++) {
             for(int y = lowerBound;  y <= upperBound; y++) {
-                for (int z = -size+1; z <= size; z++) {
+                for (int z = -size+1; z < size; z++) {
                     ChunkPos chunkPos = world.getChunk(player.getBlockPos().add(x * 16, 0, z * 16)).getPos();
                     Claim existingClaim = Claim.get(chunkPos.x, y, chunkPos.z, dimension);
 
@@ -104,14 +104,10 @@ public class ClaimCommand implements Command {
         }
 
         chunks.forEach(chunk -> faction.addClaim(chunk.getX(), chunk.getY(), chunk.getZ(), chunk.getLevel()));
-        if (size == 1) {
-            new Message("Chunk (%d, %d, %d) claimed by %s", chunks.get(0).getX(), chunks.get(0).getY(), chunks.get(0).getZ(), player.getName().getString())
-                .send(faction);
-        } else {
-            new Message("Chunks (%d, %d, %d) to (%d, %d, %d) claimed by %s", chunks.get(0).getX(), chunks.get(0).getY(), chunks.get(0).getZ(),
-                    chunks.get(chunks.size()-1).getX()+size, chunks.get(chunks.size()-1).getY(), chunks.get(chunks.size()-1).getZ()+size, player.getName().getString())
-                .send(faction);
-        }
+        new Message("Chunks (%d, %d, %d) to (%d, %d, %d) claimed by %s",
+                chunks.get(0).getX(), chunks.get(0).getY(), chunks.get(0).getZ(),
+            chunks.get(chunks.size()-1).getX()+(size-1),  chunks.get(chunks.size()-1).getY(), chunks.get(chunks.size()-1).getZ()+(size-1), player.getName().getString())
+            .send(faction);
 
         return 1;
     }
@@ -121,7 +117,7 @@ public class ClaimCommand implements Command {
         Faction faction = User.get(player.getUuid()).getFaction();
 
         if (faction.getPower() < faction.requiredPower(1)) {
-            new Message("Not enough faction power to claim chunk").fail().send(player, false);
+            new Message("Not enough faction power to claim chunk %d additional power needed.", faction.requiredPower(1) - faction.getPower()).fail().send(player, false);
             return 0;
         }
 
@@ -132,9 +128,11 @@ public class ClaimCommand implements Command {
         int size = IntegerArgumentType.getInteger(context, "size");
         ServerPlayerEntity player = context.getSource().getPlayer();
         Faction faction = User.get(player.getUuid()).getFaction();
-
-        if (faction.getPower() < faction.requiredPower((int) Math.pow(size,4))) {
-            new Message("Not enough faction power to claim chunks").fail().send(player, false);
+        int chunksToClaim = ((size - 1) + size) *  ((size - 1) + size);
+        int requiredPower = faction.requiredPower(chunksToClaim);
+        if (faction.getPower() < requiredPower) {
+            new Message("Not enough faction power to claim chunk %d additional power needed.",
+                    requiredPower - faction.getPower()).fail().send(player, false);
             return 0;
         }
 
@@ -158,6 +156,8 @@ public class ClaimCommand implements Command {
             new Message("Set player VerticalClaimRange using \"/f modify VerticalClaimRange lower upper\"").fail().send(player, false);
             return 0;
         }
+        Claim claimStart = Claim.get(chunkPos.x, lowerBound, chunkPos.z, dimension);
+        Claim claimEnd = Claim.get(chunkPos.x, upperBound, chunkPos.z, dimension);
         for(int y = lowerBound;  y <= upperBound; y++) {
             Claim existingClaim = Claim.get(chunkPos.x, y, chunkPos.z, dimension);
             if (existingClaim == null) {
@@ -172,8 +172,11 @@ public class ClaimCommand implements Command {
             }
 
             existingClaim.remove();
-            new Message("Claim (%d, %d) removed by %s", existingClaim.x, existingClaim.z, player.getName().getString()).send(faction);
         }
+        new Message("Claim (%d, %d, %d) to (%d, %d, %d) removed by %s",
+                claimStart.x, claimStart.y, claimStart.z,
+                claimEnd.x, claimEnd.y, claimEnd.z,
+                player.getName().getString()).send(faction);
         return 1;
 
     }
@@ -195,7 +198,6 @@ public class ClaimCommand implements Command {
             new Message("Set player VerticalClaimRange using \"/f modify VerticalClaimRange lower upper\"").fail().send(player, false);
             return 0;
         }
-
         for (int x = -size + 1; x < size; x++) {
             for(int y = lowerBound;  y <= upperBound; y++) {
                 for (int z = -size + 1; z < size; z++) {
@@ -209,8 +211,9 @@ public class ClaimCommand implements Command {
         }
 
         ChunkPos chunkPos = world.getChunk(player.getBlockPos().add((-size + 1) * 16, 0, (-size + 1) * 16)).getPos();
-        new Message("Claims (%d, %d) to (%d, %d) removed by %s ", chunkPos.x, chunkPos.z,
-                chunkPos.x + size - 1, chunkPos.z + size - 1, player.getName().getString())
+        new Message("Claims (%d, %d, %d) to (%d, %d, %d) removed by %s ",
+                chunkPos.x, lowerBound,chunkPos.z,
+                chunkPos.x + size - 1, upperBound,chunkPos.z + size - 1, player.getName().getString())
             .send(faction);
 
         return 1;
