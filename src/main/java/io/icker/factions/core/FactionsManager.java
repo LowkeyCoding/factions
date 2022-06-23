@@ -15,6 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class FactionsManager {
     public static PlayerManager playerManager;
@@ -34,7 +35,10 @@ public class FactionsManager {
     }
 
     private static void factionModified(Faction faction) {
-        List<ServerPlayerEntity> players = faction.getUsers().stream().map(user -> playerManager.getPlayer(user.getID())).filter(player -> player != null).toList();
+        List<ServerPlayerEntity> players = faction.getUsers().stream()
+                .map(user -> playerManager.getPlayer(user.getID()))
+                .filter(Objects::nonNull)
+                .toList();
         updatePlayerList(players);
     }
 

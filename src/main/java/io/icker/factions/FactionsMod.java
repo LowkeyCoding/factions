@@ -81,6 +81,7 @@ public class FactionsMod implements ModInitializer {
             new ModifyCommand(),
             new RadarCommand(),
             new RankCommand(),
+            new StorageCommand(),
         };
 
         for (Command command : commands) {

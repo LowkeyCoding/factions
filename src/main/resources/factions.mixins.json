@@ -9,7 +9,8 @@
         "MinecraftServerMixin",
         "ServerPlayerEntityMixin",
         "ServerPlayerInteractionManagerMixin",
-        "ServerPlayNetworkHandlerMixin"
+        "ServerPlayNetworkHandlerMixin",
+        "EnderChestMixin"
     ],
     "injectors": {
         "defaultRequire": 1

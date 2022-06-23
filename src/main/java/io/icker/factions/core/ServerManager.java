@@ -19,6 +19,7 @@ public class ServerManager {
         Claim.save();
         Faction.save();
         User.save();
+        FactionStorage.Companion.saveFactionStorageObjects();
     }
 
     private static void playerJoin(ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) {
