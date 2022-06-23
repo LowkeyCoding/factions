@@ -42,7 +42,7 @@ public class DepositCommand  implements Command {
         return CommandManager
                 .literal("deposit")
                 .requires(Requires.isMember())
-                .requires(Requires.hasPerms("factions.home", 0))
+                .requires(Requires.hasPerms("factions.deposit", 0))
                 .executes(this::run)
                 .build();
     }

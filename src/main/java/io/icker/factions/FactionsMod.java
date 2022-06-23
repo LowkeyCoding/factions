@@ -65,6 +65,7 @@ public class FactionsMod implements ModInitializer {
         Command[] commands = new Command[] {
             new AdminCommand(),
             new ChatCommand(),
+            new LeaderboardCommand(),
             new ClaimCommand(),
             new CreateCommand(),
             new DeclareCommand(),
