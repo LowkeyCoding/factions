@@ -31,11 +31,13 @@ class FactionStorage(private var isInUse: Boolean = false) : EnderChestInventory
 
         fun isFactionEnderChest(pos: BlockPos): Boolean = factionChestMap.contains(pos)
 
-        fun toggleFactionEnderChest(pos: BlockPos) {
-            if (factionChestMap.contains(pos)) {
+        fun toggleFactionEnderChest(pos: BlockPos): Boolean {
+            return if (factionChestMap.contains(pos)) {
                 factionChestMap.remove(pos)
+                false
             } else {
                 factionChestMap.add(pos)
+                true
             }
         }
 
@@ -49,7 +51,11 @@ class FactionStorage(private var isInUse: Boolean = false) : EnderChestInventory
             }
 
             val inventory = if (faction.id in factionInventories) factionInventories[faction.id]!!
-                else DataStore.loadObject("inventories/${faction.id}.dat", FactionStorage) { FactionStorage() }
+                else {
+                    val obj = DataStore.loadObject("inventories/${faction.id}.dat", FactionStorage) { FactionStorage() }
+                    factionInventories[faction.id] = obj
+                    obj
+                }
 
             if (inventory.isInUse) {
                 Message("Faction inventory is currently in use. Please try again later.")

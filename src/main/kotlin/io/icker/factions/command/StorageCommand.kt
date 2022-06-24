@@ -23,7 +23,12 @@ class StorageCommand : Command {
             return 0
         }
 
-        FactionStorage.toggleFactionEnderChest(pos)
+        if (FactionStorage.toggleFactionEnderChest(pos)) {
+            Message("Ender chest is now used as faction storage.").send(player, false)
+        } else {
+            Message("Ender chest is no longer as faction storage.").send(player, false)
+        }
+
 
         return 1
     }
