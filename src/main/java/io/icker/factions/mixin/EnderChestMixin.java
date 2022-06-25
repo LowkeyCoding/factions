@@ -18,7 +18,7 @@ public class EnderChestMixin {
             value = "INVOKE",
             target = "Lnet/minecraft/world/World;getBlockEntity(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/entity/BlockEntity;"
     ), method = "onUse", name = "enderChestInventory")
-    public EnderChestInventory openFactionChest2(EnderChestInventory value, BlockState state, World world, BlockPos pos, PlayerEntity player) {
+    public EnderChestInventory openFactionChest(EnderChestInventory value, BlockState state, World world, BlockPos pos, PlayerEntity player) {
         if (!FactionStorage.Companion.isFactionEnderChest(pos))
             return value;
 
