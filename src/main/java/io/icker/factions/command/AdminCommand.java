@@ -1,13 +1,14 @@
 package io.icker.factions.command;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.arguments.*;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-
 import io.icker.factions.FactionsMod;
 import io.icker.factions.api.persistents.Faction;
 import io.icker.factions.api.persistents.User;
+import io.icker.factions.config.Config;
 import io.icker.factions.util.Command;
 import io.icker.factions.util.Message;
 import net.minecraft.server.PlayerManager;
@@ -59,6 +60,67 @@ public class AdminCommand implements Command {
         return 1;
     }
 
+    private LiteralArgumentBuilder<ServerCommandSource> configCommandBuilder(LiteralArgumentBuilder<ServerCommandSource> builder){
+            var fields = Config.class.getDeclaredFields();
+            for(int i = 3; i < fields.length; i++){
+                var field = fields[i];
+                var type = field.getType().getSimpleName();
+                var argumentType = this.getArgumentType(type);
+                var command = CommandManager.literal(field.getName())
+                    .then(
+                        CommandManager
+                            .argument(type, argumentType)
+                            .executes(context -> {
+                                ServerCommandSource source = context.getSource();
+                                ServerPlayerEntity player = source.getPlayer();
+                                var oldValue = "";
+                                try {
+                                    Object value;
+                                    if(type.equals("HomeOptions")){
+                                        value = context.getArgument(type, String.class);
+                                        oldValue = field.get(FactionsMod.CONFIG).toString();
+                                        field.set(FactionsMod.CONFIG,Config.HomeOptions.valueOf((String) value));
+                                    } else if(type.equals("InteractionModes")){
+                                        value = context.getArgument(type, String.class);
+                                        oldValue = field.get(FactionsMod.CONFIG).toString();
+                                        field.set(FactionsMod.CONFIG, Config.InteractionModes.valueOf((String) value));
+                                    } else {
+                                        value = context.getArgument(type, field.getType());
+                                        oldValue = field.get(FactionsMod.CONFIG).toString();
+                                        field.set(FactionsMod.CONFIG, value);
+                                    }
+                                    FactionsMod.CONFIG.save();
+                                    new Message("Config " + field.getName() + ": " + Formatting.BOLD + oldValue +"→" + value).success().send(player, false);
+                                } catch (IllegalArgumentException | IllegalAccessException e) {
+                                    new Message(e.getMessage()).fail().send(player, false);
+                                }
+                                return 1;
+                            })
+                    );
+                builder.then(command.executes(context -> {
+                    ServerCommandSource source = context.getSource();
+                    ServerPlayerEntity player = source.getPlayer();
+                    try {
+                        new Message("Config " + field.getName() + ": " + Formatting.BOLD + field.get(FactionsMod.CONFIG)).send(player, false);
+                    } catch (IllegalAccessException e) {
+                        new Message(e.getMessage()).fail().send(player, false);
+                    }
+                    return 1;
+                }));
+            }
+            return builder;
+    }
+
+    private ArgumentType<? extends java.io.Serializable> getArgumentType(String type){
+        if(type.equals("int"))
+            return IntegerArgumentType.integer();
+        if(type.equals("float"))
+            return FloatArgumentType.floatArg();
+        if(type.equals("boolean"))
+            return BoolArgumentType.bool();
+        return StringArgumentType.string();
+    }
+
     public LiteralCommandNode<ServerCommandSource> getNode() {
         return CommandManager
             .literal("admin")
@@ -81,6 +143,9 @@ public class AdminCommand implements Command {
                     .suggests(Suggests.allFactions())
                     .executes(this::disband)
                 )
+            )
+            .then(
+                configCommandBuilder(CommandManager.literal("config")).build()
             )
             .build();
     }

@@ -1,6 +1,5 @@
 package io.icker.factions.command;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -14,13 +13,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
 
 public class DepositCommand  implements Command {
 
     private int run(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
         User user = User.get(player.getUuid());
@@ -29,6 +25,10 @@ public class DepositCommand  implements Command {
         int id = Item.getRawId(item.getItem());
         int count = item.getCount();
         if(id == FactionsMod.CONFIG.DEPOSIT_ITEM_ID){
+            new Message("%s: Deposited %d %s%s for %d power",
+                    player.getName().getString(), count, item.getName().getString(),
+                    count > 1 ? "'s" : "", FactionsMod.CONFIG.DEPOSIT_POWER*count)
+                    .send(faction);
             item.decrement(count);
             faction.adjustPower(FactionsMod.CONFIG.DEPOSIT_POWER*count);
         } else {
@@ -42,7 +42,7 @@ public class DepositCommand  implements Command {
         return CommandManager
                 .literal("deposit")
                 .requires(Requires.isMember())
-                .requires(Requires.hasPerms("factions.home", 0))
+                .requires(Requires.hasPerms("factions.deposit", 0))
                 .executes(this::run)
                 .build();
     }

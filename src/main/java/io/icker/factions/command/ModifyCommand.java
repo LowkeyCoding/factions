@@ -176,14 +176,14 @@ public class ModifyCommand implements Command {
             )
             .then(
                 CommandManager
-                        .literal("VerticalClaimRange")
-                        .requires(Requires.hasPerms("factions.modify.open", 0))
-                        .then(
-                                CommandManager.argument("lower bound", IntegerArgumentType.integer(-4, 20)).then(
-                                        CommandManager.argument("upper bound", IntegerArgumentType.integer(-4, 20))
-                                        .executes(this::verticalRange)
-                                )
+                    .literal("VerticalClaimRange")
+                    .requires(Requires.hasPerms("factions.modify.open", 0))
+                    .then(
+                        CommandManager.argument("lower bound", IntegerArgumentType.integer(-4, 20)).then(
+                            CommandManager.argument("upper bound", IntegerArgumentType.integer(-4, 20))
+                            .executes(this::verticalRange)
                         )
+                    )
             )
             .build();
     }

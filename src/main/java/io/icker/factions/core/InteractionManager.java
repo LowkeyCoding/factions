@@ -4,11 +4,13 @@ import io.icker.factions.FactionsMod;
 import io.icker.factions.api.events.PlayerEvents;
 import io.icker.factions.api.persistents.Claim;
 import io.icker.factions.api.persistents.Faction;
-import io.icker.factions.api.persistents.User;
 import io.icker.factions.api.persistents.Relationship.Status;
+import io.icker.factions.api.persistents.User;
+import io.icker.factions.config.Config;
 import io.icker.factions.mixin.BucketItemMixin;
 import io.icker.factions.mixin.ItemMixin;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
@@ -32,13 +34,14 @@ public class InteractionManager {
         PlayerEvents.USE_BLOCK.register(InteractionManager::onUseBlock);
         PlayerEvents.USE_ITEM.register(InteractionManager::onUseItem);
         AttackEntityCallback.EVENT.register(InteractionManager::onAttackEntity);
+        UseEntityCallback.EVENT.register(InteractionManager::onInteractEntity);
         PlayerEvents.IS_INVULNERABLE.register(InteractionManager::isInvulnerableTo);
     }
 
     private static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
-        /* if (checkPermissions(player, player.getBlockPos(), world) == ActionResult.FAIL) {
+        if (FactionsMod.CONFIG.modeIsStrict() && checkPermissions(player, player.getBlockPos(), world) == ActionResult.FAIL) {
             return ActionResult.FAIL;
-        } */
+        }
 
         BlockPos hitPos = hitResult.getBlockPos();
         if (checkPermissions(player, hitPos, world) == ActionResult.FAIL) {
@@ -73,7 +76,7 @@ public class InteractionManager {
                 }
 
                 BlockPos placePos = raycastPos.add(raycastResult.getSide().getVector());
-                if (checkPermissions(player, placePos, world) == ActionResult.FAIL) {
+                if (FactionsMod.CONFIG.modeIsStrict() && checkPermissions(player, placePos, world) == ActionResult.FAIL) {
                     return ActionResult.FAIL;
                 }
             }
@@ -93,7 +96,21 @@ public class InteractionManager {
                 return ActionResult.FAIL;
             }
 
-            if (checkPermissions(player, player.getBlockPos(), world) == ActionResult.FAIL) {
+            if (FactionsMod.CONFIG.modeIsStrict() && checkPermissions(player, player.getBlockPos(), world) == ActionResult.FAIL) {
+                return ActionResult.FAIL;
+            }
+        }
+
+        return ActionResult.PASS;
+    }
+
+    private static ActionResult onInteractEntity(PlayerEntity player, World world, Hand hand, Entity entity, EntityHitResult hitResult){
+        if (!FactionsMod.CONFIG.ALLOW_INTERACTION_WITH_ENTITY && !entity.isPlayer()) {
+            if (checkPermissions(player, entity.getBlockPos(), world) == ActionResult.FAIL) {
+                return ActionResult.FAIL;
+            }
+
+            if (FactionsMod.CONFIG.INTERACTION_MODE == Config.InteractionModes.STRICT && checkPermissions(player, player.getBlockPos(), world) == ActionResult.FAIL) {
                 return ActionResult.FAIL;
             }
         }

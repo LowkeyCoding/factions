@@ -45,6 +45,11 @@ public class Message {
         return this;
     }
 
+    public Message success() {
+        text.formatted(Formatting.GREEN);
+        return this;
+    }
+
     public Message hover(String message) {
         text.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of(message))));
         return this;
